@@ -1,23 +1,28 @@
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
+from django.views import generic
 
 from sondage.models import Question
 from sondage.models import Choice
 
-def index(request):
-    latest_question_list = Question.objects.order_by('-pub_date')[:5]
-    context = {'latest_question_list': latest_question_list,}
-    return render(request, 'sondage/index.html', context)
+class IndexView(generic.ListView):
+    template_name = 'sondage/index.html'
+    context_object_name = 'latest_question_list'
+
+    def get_queryset(self):
+        """Return the last five published questions."""
+        return Question.objects.order_by('-pub_date')[:5]
 
 
-def detail(request, question_id):
-    return HttpResponse("Voici la question %s:" % question_id)
+class DetailView(generic.DetailView):
+    model = Question
+    template_name = 'sondage/detail.html'
 
 
-def results(request, question_id):
-    question = get_object_or_404(Question, pk=question_id)
-    return render(request, 'sondage/results.html', {'question': question})
+class ResultsView(generic.DetailView):
+    model = Question
+    template_name = 'sondage/results.html'
 
 
 def vote(request, question_id):
@@ -28,7 +33,7 @@ def vote(request, question_id):
         # Redisplay the question voting form.
         return render(request, 'sondage/detail.html', {
             'question': question,
-            'error_message': "You didn't select a choice.",
+            'error_message': "Merci de choisir une réponse.",
         })
     else:
         selected_choice.votes += 1
