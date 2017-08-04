@@ -1,4 +1,6 @@
 from django.contrib import admin
+
+from sondage.models import Question
 from .models import Categorie, Article
 
 
@@ -12,3 +14,4 @@ class ArticleAdmin(admin.ModelAdmin):
 
 admin.site.register(Categorie)
 admin.site.register(Article, ArticleAdmin)
+admin.site.register(Question)
